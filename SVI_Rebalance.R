@@ -4,13 +4,12 @@
 # Author: Kyle T. Aune, PhD, MPH
 #--------------------------
 
-#---- Libraries #----
+#---- Setup #----
 pkgs <- c("tidyverse", "tidycensus", "httr", "jsonlite")
 
 invisible(lapply(pkgs, library, character.only = TRUE))
 
-# Set Census parameters for local rebalance
-
+# Set census parameters for local rebalance
 year <- 2020
 survey <- "acs5"
 geo <- "tract"
@@ -20,8 +19,15 @@ county <- "Baltimore city"
 # Should tract values be aggregated up to community statistical area?
 csa.agg <- TRUE
 
+# Census API key (comment out / delete once installed)
+# Visit http://api.census.gov/data/key_signup.html to register
+census_api_key("[type your API key here]",
+               install = TRUE)
+eadRenviron("~/.Renviron")
+
+
 # Output directory
-dir <- "~/OneDrive - Johns Hopkins/"
+dir <- "[type the folder where you'd like the file(s) saved here]"
 
 
 #---- Download Required Census Variables #----
@@ -155,7 +161,7 @@ acs <- acs %>%
 #---- Aggregating to CSA #----
 
 if (csa.agg == TRUE) {
-  # Importing 2020 census tract to CSA crosswalk file fron BNIA
+  # Importing 2020 census tract to CSA crosswalk file fro Baltimore Neighbhoor Indicator Alliance
   csa.cw.json <- fromJSON(content(
     GET(
       "https://services1.arcgis.com/mVFRs7NF4iFitgbY/arcgis/rest/services/Tract2020_to_CSA2020/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
