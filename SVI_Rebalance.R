@@ -25,7 +25,6 @@ census_api_key("[type your API key here]",
                install = TRUE)
 eadRenviron("~/.Renviron")
 
-
 # Output directory
 dir <- "[type the folder where you'd like the file(s) saved here]"
 
@@ -93,7 +92,7 @@ vars <- c(
   "S2503_C01_001E" # Occupied HU
   )
 
-# Download 2020 ACS 5-year estimates at pre-specified level
+# Download user-specified census estimates at pre-specified level
 acs <- get_acs(
   geography = geo,
   variables = vars,
@@ -101,12 +100,13 @@ acs <- get_acs(
   year = year,
   state = state,
   county = county,
-  output = "wide")
+  output = "wide"
+)
 
 # Filtering for only estimates
 acs <- acs %>%
   select(any_of(c("GEOID", vars))) %>%
-  # Renaming native census fields
+  # Renaming native census fields to match CDC documentation
   rename(
     E_TOTPOP = S0601_C01_001E,
     E_HU = DP04_0001E,
@@ -120,7 +120,8 @@ acs <- acs %>%
     E_DISABL = DP02_0072E,
     E_MOBIL = DP04_0014E,
     E_NOVEH = DP04_0058E,
-    E_GROUPQ = B26001_001E) %>%
+    E_GROUPQ = B26001_001E
+  ) %>%
   # Calculating combined fields
   mutate(
     E_HBURD = S2503_C01_028E +
@@ -155,7 +156,8 @@ acs <- acs %>%
     E_MUNIT = DP04_0012E +
       DP04_0013E,
     E_CROWD = DP04_0078E +
-      DP04_0079E)
+      DP04_0079E
+  )
 
 
 #---- Aggregating to CSA #----
@@ -170,7 +172,7 @@ if (csa.agg == TRUE) {
   ),
   flatten = TRUE)
   
-  csa.cw<- jsonlite::flatten(csa.cw.json$features) %>%
+  csa.cw <- jsonlite::flatten(csa.cw.json$features) %>%
     # Renaming fields
     rename(GEOID = attributes.GEOID_Tract_2020,
            CSA = attributes.Community_Statistical_Area_2020) %>%
@@ -183,18 +185,38 @@ if (csa.agg == TRUE) {
   
   csa <- acs %>%
     group_by(CSA) %>%
-    summarize(
-      across(
-        .cols = c(E_POV150, S1701_C01_001E, E_UNEMP, DP03_0001E,
-                  E_HBURD, S2503_C01_001E, E_NOHSDP, S1501_C01_006E,
-                  E_UNINSUR, S1810_C01_001E, E_AGE65, E_TOTPOP, E_AGE17,
-                  E_DISABL, E_SNGPNT, E_HH, E_LIMENG, B16005_001E,
-                  E_MINRTY, E_MUNIT, E_HU, E_MOBIL, E_CROWD, DP04_0002E,
-                  E_NOVEH, E_GROUPQ),
-        .fn = ~ sum(.x),
-        .names = "{.col}"
-      )
-    )
+    summarize(across(
+      .cols = c(
+        E_POV150,
+        S1701_C01_001E,
+        E_UNEMP,
+        DP03_0001E,
+        E_HBURD,
+        S2503_C01_001E,
+        E_NOHSDP,
+        S1501_C01_006E,
+        E_UNINSUR,
+        S1810_C01_001E,
+        E_AGE65,
+        E_TOTPOP,
+        E_AGE17,
+        E_DISABL,
+        E_SNGPNT,
+        E_HH,
+        E_LIMENG,
+        B16005_001E,
+        E_MINRTY,
+        E_MUNIT,
+        E_HU,
+        E_MOBIL,
+        E_CROWD,
+        DP04_0002E,
+        E_NOVEH,
+        E_GROUPQ
+      ),
+      .fn = ~ sum(.x),
+      .names = "{.col}"
+    ))
 }
 
 
@@ -277,7 +299,6 @@ svifx <- function(df) {
       RPL_THEME4 = percent_rank(SPL_THEME4),
       RPL_THEMES = percent_rank(SPL_THEMES)
     )
-    
   
   return(df)
 }
@@ -285,16 +306,26 @@ svifx <- function(df) {
 
 #---- Rebalancing SVI #----
 
-svi.ct <- svifx(acs) %>%
+svi.geo <- svifx(acs) %>%
   select(c(GEOID, EPL_POV150:RPL_THEMES))
 
-write.csv(svi.ct,
-          paste0(dir, "2020_CDC-ATSDR_SVI_Baltimore_tract.csv"))
+write.csv(svi.geo,
+          paste0(dir,
+                 year,
+                 "_CDC-ATSDR_SVI_",
+                 gsub(" ", "_", county),
+                 "_",
+                 geo,
+                 ".csv"))
 
 if (csa.agg == TRUE) {
   svi.csa <- svifx(csa) %>%
     select(c(CSA, EPL_POV150:RPL_THEMES))
   
   write.csv(svi.csa,
-            paste0(dir, "2020_CDC-ATSDR_SVI_Baltimore_CSA.csv"))
+            paste0(dir,
+                   year,
+                   "_CDC-ATSDR_SVI_",
+                   gsub(" ", "_", county),
+                   "_csa.csv"))
 }
