@@ -114,4 +114,5 @@ mde <- mdesx %>%
   full_join(mdeold[, c("datetime_gmt", "no2.oldtown")], by = c("datetime_gmt"))
 
 # Save merged hourly data
+saveRDS(mde, "mde_no2_20180101-20231231.rda")
 write.csv(mde, "mde_no2_20180101-20231231.csv")
