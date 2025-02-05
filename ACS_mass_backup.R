@@ -15,7 +15,7 @@ lapply(pkgs, library, character.only = TRUE, quietly = TRUE, verbose = FALSE)
 setwd("/Volumes/T7 Shield/Census_ACS_Backup/")
 
 # 5 year ACS at census tract level by state (2009-2023)
-yrs <- 2009:2023
+yrs <- 2010:2023
 
 # Variable lists by year
 vars.acs5 <- lapply(yrs, function(x) {
@@ -59,7 +59,7 @@ foreach(ii = seq_along(s)) %dopar% {
   },
   # If an error occurs, print a message, return NA, and keep going
   error = function(e) {
-    message(paste0("And error occurred on file ", fn.nldas[ii]))
+    message("An error occurred")
     print(e)
     return(NA)
   },
@@ -101,7 +101,7 @@ foreach(ii = seq_along(s)) %dopar% {
   },
   # If an error occurs, print a message, return NA, and keep going
   error = function(e) {
-    message(paste0("And error occurred on file ", fn.nldas[ii]))
+    message("An error occurred")
     print(e)
     return(NA)
   },
