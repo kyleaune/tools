@@ -89,7 +89,7 @@ foreach(ii = seq_along(s)) %dopar% {
         state = s[ii],
         year = y,
         survey = "acs5",
-        variables = v$acs5,
+        variables = v$acs5var,
         output = "wide")
       
       write_parquet(x, paste0("ACS5", "_", s[ii], "_tracts_", y, ".parquet"))
