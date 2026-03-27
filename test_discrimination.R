@@ -1,7 +1,6 @@
 library(dplyr)
 library(kableExtra)
 
-
 # Data frame formatted with one row for question number, additional rows for each
 # response, question accuracy represented as '0' - incorrect or '1' - correct
 dat <- read.csv("/Users/kta5166/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Classes/BBH 440 - Epidemiology/2026 SP/Exams/Exam 2 Scores.csv")
