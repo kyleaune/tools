@@ -10,7 +10,7 @@ pkgs <- c("tidyverse", "tidycensus", "httr", "jsonlite")
 invisible(lapply(pkgs, library, character.only = TRUE))
 
 # Set census parameters for local rebalance
-year <- 2020
+year <- 2023
 survey <- "acs5"
 geo <- "tract"
 state <- "MD"
@@ -21,12 +21,12 @@ csa.agg <- TRUE
 
 # Census API key (comment out / delete once installed)
 # Visit http://api.census.gov/data/key_signup.html to register
-census_api_key("[type your API key here]",
-               install = TRUE)
-eadRenviron("~/.Renviron")
+# census_api_key("[type your API key here]",
+#                install = TRUE)
+# readRenviron("~/.Renviron")
 
 # Output directory
-dir <- "[type the folder where you'd like the file(s) saved here]"
+dir <- "~/Documents/GIS/2023 SVI - Baltimore/"
 
 
 #---- Download Required Census Variables #----
@@ -214,7 +214,7 @@ if (csa.agg == TRUE) {
         E_NOVEH,
         E_GROUPQ
       ),
-      .fn = ~ sum(.x),
+      .fn = ~ sum(.x, na.rm = TRUE),
       .names = "{.col}"
     ))
 }
