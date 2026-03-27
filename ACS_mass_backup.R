@@ -15,6 +15,7 @@ lapply(pkgs, library, character.only = TRUE, quietly = TRUE, verbose = FALSE)
 setwd("/Volumes/T7 Shield/Census_ACS_Backup/")
 
 # 5 year ACS at census tract level by state (2009-2023)
+yrs <- 2009:2023
 yrs <- 2010:2023
 
 # Variable lists by year
@@ -82,8 +83,8 @@ foreach(ii = seq_along(s)) %dopar% {
   require(tidycensus)
   require(arrow)
   
-  tryCatch({
-    mapply(function(y, v) {
+  mapply(function(y, v) {
+    tryCatch({
       x <- get_acs(
         geography = "tract",
         state = s[ii],
@@ -94,23 +95,22 @@ foreach(ii = seq_along(s)) %dopar% {
       
       write_parquet(x, paste0("ACS5", "_", s[ii], "_tracts_", y, ".parquet"))
       write.csv(v, paste0("ACS5", "_", s[ii], "_tracts_", y, "_vars.csv"))
+      },
+      # If an error occurs, print a message, return NA, and keep going
+      error = function(e) {
+        message("An error occurred")
+        print(e)
+        return(NA)
+        },
+      # If a warning occurs, print a message, download the file, and keep going
+      warning = function(w) {
+        message("A warning occurred")
+        print(w)
+        })
     },
     y = yrs,
     v = vars.acs5,
     SIMPLIFY = FALSE)
-  },
-  # If an error occurs, print a message, return NA, and keep going
-  error = function(e) {
-    message("An error occurred")
-    print(e)
-    return(NA)
-  },
-  # If a warning occurs, print a message, download the file, and keep going
-  warning = function(w) {
-    message("A warning occurred")
-    print(w)
-  })
-  
 }
 
 stopCluster(cl)
